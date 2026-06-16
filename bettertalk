@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4F46E5">
+    <title>英语发音评测 · Pronunciation Checker</title>
+
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --primary-dark: #3730A3;
+            --danger: #EF4444;
+            --danger-light: #FCA5A5;
+            --success: #10B981;
+            --success-light: #6EE7B7;
+            --warning: #F59E0B;
+            --warning-light: #FCD34D;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text: #1E293B;
+            --text-secondary: #64748B;
+            --text-tertiary: #94A3B8;
+            --border: #E2E8F0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.1);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+            --radius-xs: 8px;
+            --transition: 0.2s ease;
+            --safe-bottom: calc(16px + env(safe-area-inset-bottom, 8px));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-webkit-user-select: none;
+        }
+
+        html,
+        body {
+            height: 100%;
+            height: 100dvh;
+            width: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #F1F5F9;
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body {
+            max-width: 500px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #EEF2FF 0%, #F8FAFC 25%, #FFFFFF 100%);
+            position: relative;
+        }
+
+        /* ========== Header ========== */
+        .header {
+            flex-shrink: 0;
+            padding: 14px 18px 4px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .header .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.3px;
+        }
+        .header .brand .icon-bg {
+            width: 38px;
+            height: 38px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.35);
+        }
+        .header .desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.1px;
+        }
+
+        /* ========== Main scrollable area ========== */
+        .main-container {
+            flex: 1;
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+
+        /* ========== Card ========== */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: box-shadow var(--transition);
+        }
+
+        /* ========== Target Sentence ========== */
+        .target-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .label-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .target-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .target-input {
+            flex: 1;
+            font-size: 1rem;
+            padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            background: #FAFAFA;
+            color: var(--text);
+            outline: none;
+            transition: all var(--transition);
+            min-width: 0;
+            -webkit-user-select: text;
+            user-select: text;
+            -webkit-touch-callout: default;
+            font-weight: 500;
+        }
+        .target-input:focus {
+            border-color: var(--primary-light);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .btn-random {
+            background: #F1F5F9;
+            border: none;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid transparent;
+            -webkit-tap-highlight-color: rgba(79, 70, 229, 0.1);
+            touch-action: manipulation;
+        }
+        .btn-random:active {
+            background: #E0E7FF;
+            transform: scale(0.97);
+            border-color: var(--primary-light);
+        }
+        .btn-random:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* ========== Microphone Button Area ========== */
+        .mic-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .mic-btn-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-btn {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-size: 2.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45);
+            position: relative;
+            z-index: 2;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            outline: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .mic-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.5);
+            background: var(--primary-dark);
+        }
+        .mic-btn.recording {
+            background: var(--danger);
+            box-shadow: 0 8px 28px rgba(239, 68, 68, 0.5);
+            animation: micPulse 1.2s ease-in-out infinite;
+        }
+        .mic-btn.recording:active {
+            background: var(--danger-dark);
+            transform: scale(0.92);
+        }
+        @keyframes micPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 16px rgba(239, 68, 68, 0);
+            }
+        }
+        .ripple-ring {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid rgba(79, 70, 229, 0.3);
+            z-index: 1;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            opacity: 0;
+        }
+        .mic-btn.recording~.ripple-ring {
+            opacity: 1;
+            animation: ripple 1.4s ease-out infinite;
+        }
+        @keyframes ripple {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.7;
+                border-color: rgba(239, 68, 68, 0.4);
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+                border-color: rgba(239, 68, 68, 0);
+            }
+        }
+
+        .mic-hint {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            text-align: center;
+        }
+        .mic-hint.recording-hint {
+            color: var(--danger);
+            font-weight: 600;
+            animation: fadeText 1.5s ease-in-out infinite;
+        }
+        @keyframes fadeText {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ========== Waveform Canvas ========== */
+        .waveform-container {
+            width: 100%;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            background: #F8FAFC;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .waveform-container canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .waveform-placeholder {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            position: absolute;
+            pointer-events: none;
+        }
+
+        /* ========== Transcription & Score ========== */
+        .transcript-box {
+            background: #F9FAFB;
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all var(--transition);
+        }
+        .transcript-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .transcript-text {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+            word-break: break-word;
+            min-height: 24px;
+            line-height: 1.4;
+        }
+        .transcript-text.interim {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        .score-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            transition: all 0.4s ease;
+            border: 3px solid transparent;
+        }
+        .score-circle.low {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: #FEF2F2;
+        }
+        .score-circle.medium {
+            border-color: var(--warning);
+            color: #D97706;
+            background: #FFFBEB;
+        }
+        .score-circle.high {
+            border-color: var(--success);
+            color: #059669;
+            background: #ECFDF5;
+        }
+        .score-bar-bg {
+            flex: 1;
+            height: 12px;
+            background: #E2E8F0;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .score-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 20px;
+            transition: width 0.4s ease, background 0.4s ease;
+        }
+        .score-bar-fill.low {
+            background: var(--danger);
+        }
+        .score-bar-fill.medium {
+            background: var(--warning);
+        }
+        .score-bar-fill.high {
+            background: var(--success);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        /* ========== Browser support warning ========== */
+        .warning-banner {
+            background: #FEF3C7;
+            border: 1px solid #FCD34D;
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 0.8rem;
+            color: #92400E;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1.4;
+        }
+        .warning-banner .warn-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* ========== Footer ========== */
+        .footer {
+            flex-shrink: 0;
+            font-size: 0.65rem;
+            color: var(--text-tertiary);
+            text-align: center;
+            padding: 6px 16px var(--safe-bottom);
+            letter-spacing: 0.2px;
+        }
+
+        /* ========== Media queries for larger screens ========== */
+        @media (min-width: 500px) {
+            body {
+                border-left: 1px solid rgba(226, 232, 240, 0.5);
+                border-right: 1px solid rgba(226, 232, 240, 0.5);
+            }
+            .mic-btn {
+                width: 96px;
+                height: 96px;
+                font-size: 2.5rem;
+            }
+            .mic-btn-wrapper {
+                width: 110px;
+                height: 110px;
+            }
+            .ripple-ring {
+                width: 110px;
+                height: 110px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="brand">
+            <div class="icon-bg">🎙️</div>
+            <span>发音评测</span>
+        </div>
+        <div class="desc">说出英文，实时获取发音分数</div>
+    </div>
+
+    <!-- Main Scroll -->
+    <div class="main-container" id="mainScroll">
+
+        <!-- Target Sentence -->
+        <div class="card target-section">
+            <div class="label-row">
+                <span class="label-text">📝 目标句子</span>
+                <button class="btn-random" id="btnRandom" aria-label="随机例句">
+                    🔄 随机
+                </button>
+            </div>
+            <div class="target-input-wrapper">
+                <input type="text" class="target-input" id="targetInput" value="The quick brown fox jumps over the lazy dog" placeholder="输入英文句子..." enterkeyhint="done">
+            </div>
+        </div>
+
+        <!-- Microphone & Waveform -->
+        <div class="card mic-section">
+            <div class="mic-btn-wrapper">
+                <button class="mic-btn" id="micBtn" aria-label="按住录音或点击开始">
+                    <span id="micIcon">🎤</span>
+                </button>
+                <div class="ripple-ring" id="rippleRing"></div>
+            </div>
+            <div class="mic-hint" id="micHint">按住录音，松开停止</div>
+            <div class="waveform-container" id="waveformContainer">
+                <canvas id="waveCanvas"></canvas>
+                <div class="waveform-placeholder" id="wavePlaceholder">📢 波形显示</div>
+            </div>
+        </div>
+
+        <!-- Transcription & Score -->
+        <div class="card">
+            <div class="transcript-box" id="transcriptBox">
+                <span class="transcript-label">📋 你的发音识别</span>
+                <div class="transcript-text" id="transcriptText">等待录音...</div>
+            </div>
+            <div class="score-display" style="margin-top: 12px;">
+                <div class="score-circle" id="scoreCircle">-</div>
+                <div class="score-bar-bg">
+                    <div class="score-bar-fill" id="scoreBarFill" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div class="detail-row" id="detailRow">
+                <span id="confidenceDetail">置信度: -</span>
+                <span id="similarityDetail">文本匹配: -</span>
+            </div>
+        </div>
+
+        <!-- Warning Banner (hidden by default) -->
+        <div class="warning-banner" id="warningBanner" style="display: none;">
+            <span class="warn-icon">⚠️</span>
+            <span id="warningText">您的浏览器可能不支持语音识别，请使用 Chrome 或 Edge 浏览器。</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        🔒 音频仅在本地处理 · 需 HTTPS 或 localhost
+    </div>
+
+    <script>
+        (function() {
+            // ============ DOM Elements ============
+            const targetInput = document.getElementById('targetInput');
+            const btnRandom = document.getElementById('btnRandom');
+            const micBtn = document.getElementById('micBtn');
+            const micIcon = document.getElementById('micIcon');
+            const rippleRing = document.getElementById('rippleRing');
+            const micHint = document.getElementById('micHint');
+            const waveCanvas = document.getElementById('waveCanvas');
+            const waveContainer = document.getElementById('waveformContainer');
+            const wavePlaceholder = document.getElementById('wavePlaceholder');
+            const transcriptText = document.getElementById('transcriptText');
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreBarFill = document.getElementById('scoreBarFill');
+            const confidenceDetail = document.getElementById('confidenceDetail');
+            const similarityDetail = document.getElementById('similarityDetail');
+            const warningBanner = document.getElementById('warningBanner');
+            const warningText = document.getElementById('warningText');
+            const mainScroll = document.getElementById('mainScroll');
+
+            // ============ State ============
+            let isRecording = false;
+            let audioContext = null;
+            let analyser = null;
+            let microphoneStream = null;
+            let animationFrameId = null;
+            let recognition = null;
+            let finalTranscript = '';
+            let interimTranscript = '';
+            let totalConfidence = 0;
+            let confidenceCount = 0;
+            let speechRecognized = false;
+            let recognitionSupported = false;
+            let touchStartTime = 0;
+            let touchActive = false;
+            let mouseActive = false;
+
+            // ============ Sample Sentences ============
+            const sampleSentences = [
+                "The quick brown fox jumps over the lazy dog",
+                "I would like a cup of coffee please",
+                "She sells seashells by the seashore",
+                "How much wood would a woodchuck chuck",
+                "Peter Piper picked a peck of pickled peppers",
+                "I think learning English is very important",
+                "Could you tell me how to get to the station",
+                "The weather today is sunny and warm",
+                "He played the piano beautifully at the concert",
+                "A journey of a thousand miles begins with a single step"
+            ];
+
+            // ============ Initialize ============
+            function init() {
+                // Check speech recognition support
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    recognitionSupported = true;
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-US'; // English
+                    recognition.maxAlternatives = 1;
+
+                    recognition.onresult = handleRecognitionResult;
+                    recognition.onerror = handleRecognitionError;
+                    recognition.onend = handleRecognitionEnd;
+                } else {
+                    recognitionSupported = false;
+                    showWarning('您的浏览器不支持语音识别。请使用最新版 Chrome 或 Edge 浏览器（需 HTTPS 或 localhost）。');
+                }
+
+                // Setup microphone stream for visualization (but don't start yet)
+                setupMicrophoneStream().catch(() => {
+                    // Will handle on user gesture
+                });
+
+                // Events
+                bindEvents();
+                // Draw initial empty waveform
+                drawWaveformPlaceholder();
+            }
+
+            function showWarning(msg) {
+                warningBanner.style.display = 'flex';
+                warningText.textContent = msg;
+            }
+
+            function hideWarning() {
+                warningBanner.style.display = 'none';
+            }
+
+            // ============ Microphone Stream for Visualization ============
+            async function setupMicrophoneStream() {
+                if (microphoneStream) return; // already have
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    microphoneStream = stream;
+                    // Create audio context if not yet
+                    if (!audioContext || audioContext.state === 'closed') {
+                        audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                    }
+                    const source = audioContext.createMediaStreamSource(stream);
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+                    analyser.smoothingTimeConstant = 0.7;
+                    source.connect(analyser);
+                    // Don't connect to destination (no echo)
+                    return true;
+                } catch (err) {
+                    console.error('Microphone access denied:', err);
+                    showWarning('无法访问麦克风，请授予麦克风权限。');
+                    throw err;
+                }
+            }
+
+            function drawWaveformPlaceholder() {
+                const canvas = waveCanvas;
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width || canvas.clientWidth;
+                const height = canvas.height || canvas.clientHeight;
+                if (width <= 0 || height <= 0) return;
+                canvas.width = width;
+                canvas.height = height;
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#E2E8F0';
+                ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('等待录音...', width / 2, height / 2 + 4);
+            }
+
+            function startWaveformAnimation() {
+                if (!analyser || !microphoneStream) return;
+                const canvas = waveCanvas;
+                const ctx = canvas.getContext('2d');
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function draw() {
+                    if (!isRecording && !microphoneStream) {
+                        // If not recording but stream still available (maybe), continue? Stop to save battery.
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                        drawWaveformPlaceholder();
+                        return;
+                    }
+                    animationFrameId = requestAnimationFrame(draw);
+
+                    const width = canvas.clientWidth;
+                    const height = canvas.clientHeight;
+                    if (width <= 0 || height <= 0) return;
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    analyser.getByteTimeDomainData(dataArray);
+
+                    ctx.clearRect(0, 0, width, height);
+                    ctx.lineWidth = 2.5;
+                    ctx.strokeStyle = isRecording ? '#EF4444' : '#4F46E5';
+                    ctx.beginPath();
+
+                    const sliceWidth = width / bufferLength;
+                    let x = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        const v = dataArray[i] / 128.0;
+                        const y = (v * height) / 2;
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                        x += sliceWidth;
+                    }
+                    ctx.lineTo(width, height / 2);
+                    ctx.stroke();
+
+                    // Add glow effect
+                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = isRecording ? 'rgba(239,68,68,0.5)' : 'rgba(79,70,229,0.4)';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+                draw();
+                wavePlaceholder.style.display = 'none';
+            }
+
+            function stopWaveformAnimation() {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                // Draw a flat line or placeholder
+                drawWaveformPlaceholder();
+                wavePlaceholder.style.display = 'block';
+            }
+
+            // ============ Speech Recognition Handlers ============
+            function handleRecognitionResult(event) {
+                interimTranscript = '';
+                let newFinal = '';
+                let localConfidenceSum = 0;
+                let localCount = 0;
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const result = event.results[i];
+                    const transcript = result[0].transcript;
+                    const confidence = result[0].confidence || 0.5; // default 0.5 if not provided
+                    if (result.isFinal) {
+                        newFinal += transcript + ' ';
+                        totalConfidence += confidence;
+                        confidenceCount++;
+                        speechRecognized = true;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (newFinal) {
+                    finalTranscript += newFinal;
+                }
+
+                updateTranscriptDisplay();
+                // Real-time scoring based on current combined text
+                updateRealtimeScore();
+            }
+
+            function handleRecognitionError(event) {
+                console.error('Speech recognition error:', event.error, event.message);
+                if (event.error === 'no-speech') {
+                    // No speech detected, ignore silently
+                } else if (event.error === 'audio-capture') {
+                    showWarning('无法捕获音频，请检查麦克风权限。');
+                } else if (event.error === 'not-allowed') {
+                    showWarning('麦克风权限被拒绝，请在设置中允许。');
+                } else if (event.error === 'network') {
+                    showWarning('语音识别需要网络连接，请检查网络。');
+                } else {
+                    // Other errors
+                    showWarning('语音识别出错：' + (event.message || event.error));
+                }
+                // In case of critical error, stop recording
+                if (isRecording) {
+                    stopRecording(true);
+                }
+            }
+
+            function handleRecognitionEnd() {
+                // If we are still recording (user hasn't released button), restart recognition
+                if (isRecording && recognition) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        // Already started maybe, ignore
+                    }
+                } else if (!isRecording) {
+                    // Recording stopped by user, finalize score
+                    computeFinalScore();
+                }
+            }
+
+            function updateTranscriptDisplay() {
+                let displayText = finalTranscript || '';
+                if (interimTranscript) {
+                    displayText += ' <span style="color:#94A3B8; font-style:italic;">' + interimTranscript +
+                        '</span>';
+                }
+                if (!displayText) {
+                    transcriptText.innerHTML = '等待语音...';
+                    transcriptText.classList.add('interim');
+                } else {
+                    transcriptText.innerHTML = displayText;
+                    transcriptText.classList.remove('interim');
+                }
+            }
+
+            function updateRealtimeScore() {
+                const target = targetInput.value.trim();
+                if (!target) return;
+                const combined = (finalTranscript + ' ' + interimTranscript).trim();
+                if (!combined) {
+                    // No input yet
+                    setScoreDisplay(null);
+                    return;
+                }
+
+                const similarity = calculateTextSimilarity(target, combined);
+                const avgConf = confidenceCount > 0 ? totalConfidence / confidenceCount : 0.6;
+                const score = Math.round(similarity * 0.7 + avgConf * 0.3 * 100);
+                const clampedScore = Math.min(100, Math.max(0, score));
+
+                setScoreDisplay(clampedScore);
+                // Update details
+                confidenceDetail.textContent = `置信度: ${(avgConf*100).toFixed(0)}%`;
+                similarityDetail.textContent = `文本匹配: ${Math.round(similarity)}%`;
+            }
+
+            function computeFinalScore() {
+                const target = targetInput.value.trim();
+                if (!target || !speechRecognized) {
+                    setScoreDisplay(null);
+                    confidenceDetail.textContent = '置信度: -';
+                    similarityDetail.textContent = '文本匹配: -';
+                    return;
+                }
+                const combined = finalTranscript.trim();
+                if (!combined) {
+                    setScoreDisplay(null);
+                    return;
+                }
+                const similarity = calculateTextSimilarity(target, combined);
+                const avgConf = confidenceCount > 0 ? totalConfidence / confidenceCount : 0.6;
+                const score = Math.round(similarity * 0.7 + avgConf * 0.3 * 100);
+                const clampedScore = Math.min(100, Math.max(0, score));
+
+                setScoreDisplay(clampedScore);
+                confidenceDetail.textContent = `置信度: ${(avgConf*100).toFixed(0)}%`;
+                similarityDetail.textContent = `文本匹配: ${Math.round(similarity)}%`;
+
+                // Scroll to score maybe
+                const scoreCard = scoreCircle.closest('.card');
+                if (scoreCard) {
+                    scoreCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+
+            function setScoreDisplay(score) {
+                if (score === null || score === undefined) {
+                    scoreCircle.textContent = '-';
+                    scoreCircle.className = 'score-circle';
+                    scoreBarFill.style.width = '0%';
+                    scoreBarFill.className = 'score-bar-fill';
+                    return;
+                }
+                scoreCircle.textContent = score;
+                scoreBarFill.style.width = score + '%';
+
+                // Update classes based on score
+                let level;
+                if (score < 50) level = 'low';
+                else if (score < 75) level = 'medium';
+                else level = 'high';
+
+                scoreCircle.className = 'score-circle ' + level;
+                scoreBarFill.className = 'score-bar-fill ' + level;
+            }
+
+            // ============ Text Similarity (Levenshtein-based) ============
+            function calculateTextSimilarity(target, spoken) {
+                const normalize = (str) => {
+                    return str.toLowerCase()
+                        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, '')
+                        .replace(/\s{2,}/g, ' ')
+                        .trim();
+                };
+                const t = normalize(target);
+                const s = normalize(spoken);
+                if (!t || !s) return 0;
+                const tWords = t.split(' ');
+                const sWords = s.split(' ');
+
+                // Word-level comparison: count matching words
+                let matchCount = 0;
+                const tSet = new Set(tWords);
+                const sUnique = [...new Set(sWords)];
+                for (const word of sUnique) {
+                    if (tSet.has(word)) matchCount++;
+                }
+                const wordSimilarity = tWords.length > 0 ? matchCount / Math.max(tWords.length, sUnique.length) : 0;
+
+                // Also character-level similarity using Levenshtein
+                const levDistance = levenshtein(t, s);
+                const maxLen = Math.max(t.length, s.length);
+                const charSimilarity = maxLen > 0 ? 1 - levDistance / maxLen : 0;
+
+                // Combine (weighted towards word similarity for meaning)
+                const similarity = wordSimilarity * 0.55 + charSimilarity * 0.45;
+                return Math.max(0, Math.min(1, similarity)) * 100; // percentage
+            }
+
+            function levenshtein(a, b) {
+                const matrix = [];
+                for (let i = 0; i <= b.length; i++) {
+                    matrix[i] = [i];
+                }
+                for (let j = 0; j <= a.length; j++) {
+                    matrix[0][j] = j;
+                }
+                for (let i = 1; i <= b.length; i++) {
+                    for (let j = 1; j <= a.length; j++) {
+                        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                            matrix[i][j] = matrix[i - 1][j - 1];
+                        } else {
+                            matrix[i][j] = Math.min(
+                                matrix[i - 1][j - 1] + 1, // substitution
+                                matrix[i][j - 1] + 1, // insertion
+                                matrix[i - 1][j] + 1 // deletion
+                            );
+                        }
+                    }
+                }
+                return matrix[b.length][a.length];
+            }
+
+            // ============ Recording Control ============
+            async function startRecording() {
+                if (isRecording) return;
+                if (!recognitionSupported) {
+                    showWarning('当前浏览器不支持语音识别，无法评测。');
+                    return;
+                }
+
+                // Ensure microphone stream for visualization
+                try {
+                    if (!microphoneStream) {
+                        await setupMicrophoneStream();
+                    }
+                } catch (e) {
+                    // error already shown
+                    return;
+                }
+
+                // Reset recognition state
+                finalTranscript = '';
+                interimTranscript = '';
+                totalConfidence = 0;
+                confidenceCount = 0;
+                speechRecognized = false;
+                updateTranscriptDisplay();
+                setScoreDisplay(null);
+                confidenceDetail.textContent = '置信度: -';
+                similarityDetail.textContent = '文本匹配: -';
+
+                isRecording = true;
+                micBtn.classList.add('recording');
+                micHint.textContent = '正在录音... 松开停止';
+                micHint.classList.add('recording-hint');
+                micIcon.textContent = '⏺️';
+
+                // Start recognition
+                try {
+                    recognition.start();
+                } catch (e) {
+                    // If already started, ignore
+                    console.warn('Recognition start error:', e);
+                }
+
+                // Start waveform animation
+                startWaveformAnimation();
+                wavePlaceholder.style.display = 'none';
+
+                // Vibrate if available (mobile feedback)
+                if (navigator.vibrate) {
+                    navigator.vibrate(15);
+                }
+            }
+
+            function stopRecording(forceStop = false) {
+                if (!isRecording) return;
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                micHint.textContent = '按住录音，松开停止';
+                micHint.classList.remove('recording-hint');
+                micIcon.textContent = '🎤';
+
+                // Stop recognition
+                if (recognition) {
+                    try {
+                        recognition.stop();
+                    } catch (e) {
+                        console.warn('Recognition stop error:', e);
+                    }
+                }
+
+                // Stop waveform animation (but stream may still be active)
+                stopWaveformAnimation();
+
+                // If force stop due to error, we may not have final result
+                if (forceStop) {
+                    computeFinalScore();
+                }
+
+                // If we haven't recognized anything, still compute (maybe empty)
+                if (!speechRecognized && finalTranscript.trim() === '') {
+                    // No speech recognized
+                    transcriptText.innerHTML = '未识别到语音，请重试';
+                    transcriptText.classList.add('interim');
+                    setScoreDisplay(0);
+                    confidenceDetail.textContent = '置信度: 0%';
+                    similarityDetail.textContent = '文本匹配: 0%';
+                }
+
+                // Vibrate
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            }
+
+            // ============ Event Binding ============
+            function bindEvents() {
+                // Mic button interactions: touch and mouse
+                // Prevent default touch behaviors
+                micBtn.addEventListener('touchstart', handleTouchStart, { passive: false });
+                micBtn.addEventListener('touchend', handleTouchEnd);
+                micBtn.addEventListener('touchcancel', handleTouchCancel);
+                micBtn.addEventListener('mousedown', handleMouseDown);
+                micBtn.addEventListener('mouseup', handleMouseUp);
+                micBtn.addEventListener('mouseleave', handleMouseLeave);
+                micBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+
+                // Random button
+                btnRandom.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    pickRandomSentence();
+                });
+
+                // Also support click on mic button for toggle mode (accessibility)
+                micBtn.addEventListener('click', (e) => {
+                    // If it's a synthetic click after touch, ignore (handled by touch events)
+                    if (e.pointerType === 'touch' || e.detail === 0) return;
+                    // For mouse click, toggle
+                    if (!isRecording) {
+                        startRecording();
+                    } else {
+                        stopRecording();
+                    }
+                });
+
+                // Keyboard support (space bar) for accessibility
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && document.activeElement === micBtn) {
+                        e.preventDefault();
+                        if (!isRecording) startRecording();
+                        else stopRecording();
+                    }
+                });
+
+                // Handle page visibility change to stop recording if user switches app
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden && isRecording) {
+                        stopRecording(true);
+                    }
+                });
+
+                // Clean up on page unload
+                window.addEventListener('beforeunload', () => {
+                    if (isRecording) stopRecording(true);
+                    if (microphoneStream) {
+                        microphoneStream.getTracks().forEach(track => track.stop());
+                    }
+                    if (audioContext && audioContext.state !== 'closed') {
+                        audioContext.close();
+                    }
+                });
+            }
+
+            function handleTouchStart(e) {
+                e.preventDefault(); // prevent default (like scroll or zoom)
+                touchActive = true;
+                touchStartTime = Date.now();
+                if (!isRecording) {
+                    startRecording();
+                }
+            }
+
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                if (touchActive && isRecording) {
+                    stopRecording();
+                }
+                touchActive = false;
+            }
+
+            function handleTouchCancel(e) {
+                if (touchActive && isRecording) {
+                    stopRecording(true);
+                }
+                touchActive = false;
+            }
+
+            function handleMouseDown(e) {
+                e.preventDefault();
+                if (e.button !== 0) return; // left button only
+                mouseActive = true;
+                if (!isRecording) {
+                    startRecording();
+                }
+            }
+
+            function handleMouseUp(e) {
+                if (mouseActive && isRecording) {
+                    stopRecording();
+                }
+                mouseActive = false;
+            }
+
+            function handleMouseLeave(e) {
+                if (mouseActive && isRecording) {
+                    stopRecording();
+                }
+                mouseActive = false;
+            }
+
+            function pickRandomSentence() {
+                const randomIndex = Math.floor(Math.random() * sampleSentences.length);
+                targetInput.value = sampleSentences[randomIndex];
+                // Clear previous results
+                resetResults();
+                // Focus input briefly for mobile keyboard? Not necessary.
+            }
+
+            function resetResults() {
+                finalTranscript = '';
+                interimTranscript = '';
+                totalConfidence = 0;
+                confidenceCount = 0;
+                speechRecognized = false;
+                updateTranscriptDisplay();
+                setScoreDisplay(null);
+                confidenceDetail.textContent = '置信度: -';
+                similarityDetail.textContent = '文本匹配: -';
+            }
+
+            // ============ Resize Observer for Canvas ============
+            function handleCanvasResize() {
+                const canvas = waveCanvas;
+                const container = waveContainer;
+                if (canvas && container) {
+                    const rect = container.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0) {
+                        canvas.width = rect.width;
+                        canvas.height = rect.height;
+                    }
+                }
+            }
+
+            // Observe container size changes
+            if (window.ResizeObserver) {
+                const resizeObserver = new ResizeObserver(() => {
+                    handleCanvasResize();
+                    if (!isRecording) drawWaveformPlaceholder();
+                });
+                resizeObserver.observe(waveContainer);
+            } else {
+                window.addEventListener('resize', () => {
+                    handleCanvasResize();
+                    if (!isRecording) drawWaveformPlaceholder();
+                });
+            }
+
+            // Initial canvas setup
+            setTimeout(() => {
+                handleCanvasResize();
+                drawWaveformPlaceholder();
+            }, 100);
+
+            // ============ Start App ============
+            init();
+
+            // Log readiness
+            console.log('✅ 英语发音评测应用已就绪');
+            console.log('📱 支持移动端触摸操作（按住录音，松开停止）');
+            console.log('🎤 语音识别支持:', recognitionSupported ? '是' : '否');
+            console.log('🔒 请确保通过 HTTPS 或 localhost 访问以获得麦克风权限');
+        })();
+    </script>
+</body>
+</html>
